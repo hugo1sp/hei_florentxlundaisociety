@@ -52,14 +52,8 @@ export default function AnalysisResults({ scan, analysis, onReset }: Props) {
       </div>
 
       {/* ── Score card ───────────────────────────────── */}
-      <div className="rounded-2xl bg-gray-900 border border-gray-800 p-5 flex items-center gap-6 flex-wrap">
-        <div className="flex items-center gap-4">
-          <div className={`text-6xl font-black ${risk.color}`}>{risk.g}</div>
-          <div>
-            <p className="text-white font-bold text-lg">Security Grade</p>
-            <p className={`text-sm font-medium ${risk.color}`}>{risk.sub}</p>
-          </div>
-        </div>
+      <div className="rounded-2xl bg-gray-900 border border-gray-800 px-5 py-4 flex items-center gap-6 flex-wrap">
+        <p className={`text-lg font-bold ${risk.color}`}>{risk.sub}</p>
         <div className="flex gap-5 ml-auto flex-wrap">
           {(summary.CRITICAL > 0) && <Stat n={summary.CRITICAL} label="Critical" color="text-red-400" />}
           {(summary.HIGH > 0)     && <Stat n={summary.HIGH}     label="High"     color="text-orange-400" />}
@@ -124,7 +118,7 @@ export default function AnalysisResults({ scan, analysis, onReset }: Props) {
 function Stat({ n, label, color }: { n: number; label: string; color: string }) {
   return (
     <div className="text-center">
-      <p className={`text-3xl font-black ${color}`}>{n}</p>
+      <p className={`text-2xl font-black ${color}`}>{n}</p>
       <p className="text-xs text-gray-500">{label}</p>
     </div>
   );

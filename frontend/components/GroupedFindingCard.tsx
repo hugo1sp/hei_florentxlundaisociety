@@ -14,13 +14,6 @@ const SEVERITY_ICON: Record<Severity, string> = {
   CRITICAL: "●", HIGH: "▲", MEDIUM: "◆", PASS: "✓",
 };
 
-const SEVERITY_IMPACT: Record<Severity, string> = {
-  CRITICAL: "Requires immediate action — actively exploitable with severe impact.",
-  HIGH:     "Should be fixed urgently — significant risk if left unresolved.",
-  MEDIUM:   "Address soon — lower risk but contributes to overall attack surface.",
-  PASS:     "This check passed — no action needed.",
-};
-
 const CATEGORY_INFO: Record<Category, { label: string; icon: string; context: string }> = {
   secrets:    { label: "Secrets",    icon: "🔑", context: "Exposed credentials give attackers direct access to your databases, APIs, and cloud infrastructure — often the fastest path to a full compromise." },
   ports:      { label: "Network",    icon: "🔌", context: "Open ports on sensitive services allow direct attacks on databases and internal systems. Most of these should never be reachable from the public internet." },
@@ -43,6 +36,7 @@ function isUrl(value: string) {
 export default function GroupedFindingCard({ finding }: { finding: GroupedFinding }) {
   const [expanded, setExpanded] = useState(false);
   const [showContext, setShowContext] = useState(false);
+  const [showFix, setShowFix] = useState(false);
   const styles = SEVERITY_STYLES[finding.severity];
   const muted = finding.likely_false_positive;
   const catInfo = CATEGORY_INFO[finding.category] ?? { label: finding.category, icon: "•", context: "" };
@@ -76,11 +70,6 @@ export default function GroupedFindingCard({ finding }: { finding: GroupedFindin
 
         {/* Title */}
         <h3 className="text-white font-bold text-base leading-snug">{finding.title}</h3>
-
-        {/* Impact statement */}
-        {!isPass && (
-          <p className="text-xs font-medium text-gray-500 italic">{SEVERITY_IMPACT[finding.severity]}</p>
-        )}
 
         {/* Description */}
         <p className="text-gray-300 text-sm leading-relaxed">{finding.description}</p>
@@ -144,9 +133,18 @@ export default function GroupedFindingCard({ finding }: { finding: GroupedFindin
 
       {/* Fix section */}
       {finding.fix && !isPass && (
-        <div className="mx-5 mb-4 rounded-lg bg-gray-800/60 border border-gray-700 px-4 py-3">
-          <p className="text-xs font-semibold text-green-400 uppercase tracking-wider mb-1">How to fix</p>
-          <p className="text-xs text-gray-300 leading-relaxed">{finding.fix}</p>
+        <div className="px-5 pb-3">
+          <button
+            onClick={() => setShowFix(v => !v)}
+            className="text-xs text-green-500 hover:text-green-400 transition font-medium"
+          >
+            {showFix ? "▲ Hide fix" : "▼ How to fix"}
+          </button>
+          {showFix && (
+            <div className="mt-2 rounded-lg bg-gray-800/60 border border-gray-700 px-4 py-3">
+              <p className="text-xs text-gray-300 leading-relaxed">{finding.fix}</p>
+            </div>
+          )}
         </div>
       )}
 
