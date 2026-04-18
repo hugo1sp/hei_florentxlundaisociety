@@ -13,7 +13,6 @@ interface Props {
   onReset: () => void;
 }
 
-
 function grade(s: Record<Severity, number>) {
   if (s.CRITICAL >= 4) return { g: "F", color: "text-red-500", sub: "Critical Risk" };
   if (s.CRITICAL >= 2) return { g: "D", color: "text-red-400", sub: "High Risk" };
@@ -27,14 +26,16 @@ export default function AnalysisResults({ scan, analysis, onReset }: Props) {
   const { summary } = scan;
   const risk = grade(summary);
 
-  const sorted = [...analysis.grouped_findings].sort(
-    (a, b) => SEVERITY_ORDER.indexOf(a.severity) - SEVERITY_ORDER.indexOf(b.severity)
-  );
+  const bySeverity = (a: { severity: Severity }, b: { severity: Severity }) =>
+    SEVERITY_ORDER.indexOf(a.severity) - SEVERITY_ORDER.indexOf(b.severity);
 
-  const problems = sorted.filter(f => f.severity !== "PASS");
-  const passes = sorted.filter(f => f.severity === "PASS");
+  const real       = [...analysis.grouped_findings].filter(f => !f.likely_false_positive).sort(bySeverity);
+  const maybeNoise = [...analysis.grouped_findings].filter(f => f.likely_false_positive).sort(bySeverity);
 
-  const visible = tab === "problems" ? problems : sorted;
+  const problems = real.filter(f => f.severity !== "PASS");
+  const passes   = real.filter(f => f.severity === "PASS");
+
+  const visible = tab === "problems" ? problems : real;
 
   return (
     <div className="w-full max-w-3xl mx-auto space-y-5">
@@ -90,7 +91,7 @@ export default function AnalysisResults({ scan, analysis, onReset }: Props) {
               : "bg-transparent text-gray-500 border border-gray-800 hover:text-gray-300"
           }`}
         >
-          All Tests <span className="opacity-60">({sorted.length})</span>
+          All Tests <span className="opacity-60">({real.length})</span>
         </button>
       </div>
 
@@ -100,6 +101,20 @@ export default function AnalysisResults({ scan, analysis, onReset }: Props) {
           ? <p className="text-gray-600 text-sm text-center py-10">No problems found — looking good!</p>
           : visible.map(f => <GroupedFindingCard key={f.id} finding={f} />)
         }
+
+        {/* False positive divider */}
+        {maybeNoise.length > 0 && (
+          <>
+            <div className="flex items-center gap-3 pt-2">
+              <div className="flex-1 border-t border-gray-800" />
+              <span className="text-xs text-gray-500 whitespace-nowrap">
+                Possibly not applicable to this site
+              </span>
+              <div className="flex-1 border-t border-gray-800" />
+            </div>
+            {maybeNoise.map(f => <GroupedFindingCard key={f.id} finding={f} />)}
+          </>
+        )}
       </div>
 
     </div>
@@ -114,4 +129,3 @@ function Stat({ n, label, color }: { n: number; label: string; color: string }) 
     </div>
   );
 }
-
